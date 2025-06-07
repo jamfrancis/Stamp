@@ -35,16 +35,6 @@
 			path = Stamp;
 			sourceTree = "<group>";
 		};
-		1AB7B5AC2DF4DE1F0018F8B5 /* StampTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = StampTests;
-			sourceTree = "<group>";
-		};
-		1AB7B5B62DF4DE1F0018F8B5 /* StampUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = StampUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,8 +66,6 @@
 			isa = PBXGroup;
 			children = (
 				1AB7B59E2DF4DE1C0018F8B5 /* Stamp */,
-				1AB7B5AC2DF4DE1F0018F8B5 /* StampTests */,
-				1AB7B5B62DF4DE1F0018F8B5 /* StampUITests */,
 				1AB7B59D2DF4DE1C0018F8B5 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -130,9 +118,6 @@
 			dependencies = (
 				1AB7B5AB2DF4DE1F0018F8B5 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				1AB7B5AC2DF4DE1F0018F8B5 /* StampTests */,
-			);
 			name = StampTests;
 			packageProductDependencies = (
 			);
@@ -152,9 +137,6 @@
 			);
 			dependencies = (
 				1AB7B5B52DF4DE1F0018F8B5 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				1AB7B5B62DF4DE1F0018F8B5 /* StampUITests */,
 			);
 			name = StampUITests;
 			packageProductDependencies = (
