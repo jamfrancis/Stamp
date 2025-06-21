@@ -1,9 +1,23 @@
 // Entry.swift
-// Contains the Entry model and JournalStore class used by the app
 
 import Foundation
 import SwiftUI
 import CoreData
+
+class CoreDataManager {
+    static let shared = CoreDataManager()
+    lazy var viewContext: NSManagedObjectContext = {
+        let container = NSPersistentContainer(name: "Stamp")
+        container.loadPersistentStores { _, _ in }
+        return container.viewContext
+    }()
+    func saveContext() {
+        let context = viewContext
+        if context.hasChanges {
+            try? context.save()
+        }
+    }
+}
 
 // Model for each journal entry
 struct Entry: Identifiable, Codable, Equatable {
@@ -14,7 +28,7 @@ struct Entry: Identifiable, Codable, Equatable {
     var notes: String
     var photoData: Data?
     var edit: Date
-    var isDeleted: Bool = false
+    var isArchived: Bool = false // Changed from isDeleted to isArchived
     var latitude: Double? = nil
     var longitude: Double? = nil
 
@@ -24,18 +38,32 @@ struct Entry: Identifiable, Codable, Equatable {
         return formatter.string(from: date)
     }
 
+    // Add proper initializer for all parameters
+    init(id: UUID, title: String, location: String, date: Date, notes: String, photoData: Data?, edit: Date, isArchived: Bool = false, latitude: Double? = nil, longitude: Double? = nil) {
+        self.id = id
+        self.title = title
+        self.location = location
+        self.date = date
+        self.notes = notes
+        self.photoData = photoData
+        self.edit = edit
+        self.isArchived = isArchived
+        self.latitude = latitude
+        self.longitude = longitude
+    }
+
     // Conversion from JournalEntry (Core Data)
     init(from managed: JournalEntry) {
-        self.id = managed.id ?? UUID()
+        self.id = UUID() // JournalEntry does not have 'id'; generate new UUID
         self.title = managed.title ?? ""
-        self.location = managed.location ?? ""
+        self.location = "" // Not available in JournalEntry model
         self.date = managed.date ?? Date()
-        self.notes = managed.notes ?? ""
-        self.photoData = managed.photoData
-        self.edit = managed.edit ?? Date()
-        self.isDeleted = managed.isDeleted
-        self.latitude = (managed.latitude == 0) ? nil : managed.latitude
-        self.longitude = (managed.longitude == 0) ? nil : managed.longitude
+        self.notes = managed.content ?? "" // 'content' maps to 'notes'
+        self.photoData = nil // Not available in JournalEntry model
+        self.edit = managed.date ?? Date() // Fallback to date
+        self.isArchived = managed.isArchived
+        self.latitude = nil // Not available in JournalEntry model
+        self.longitude = nil // Not available in JournalEntry model
     }
 }
 
@@ -63,16 +91,13 @@ class JournalStore: ObservableObject {
 
     func addEntry(_ entry: Entry) {
         let managed = JournalEntry(context: context)
-        managed.id = entry.id
+        // Assign only fields existing in JournalEntry model
         managed.title = entry.title
-        managed.location = entry.location
+        managed.content = entry.notes // Map notes to content
         managed.date = entry.date
-        managed.notes = entry.notes
-        managed.photoData = entry.photoData
-        managed.edit = entry.edit
-        managed.isDeleted = entry.isDeleted
-        managed.latitude = entry.latitude ?? 0
-        managed.longitude = entry.longitude ?? 0
+        managed.isArchived = entry.isArchived
+        // The following fields do not exist in JournalEntry and are omitted:
+        // id, location, photoData, edit, latitude, longitude
         CoreDataManager.shared.saveContext()
         load()
     }
@@ -84,14 +109,11 @@ class JournalStore: ObservableObject {
             request.predicate = NSPredicate(format: "id == %@", entry.id as CVarArg)
             if let result = try? context.fetch(request), let managed = result.first {
                 managed.title = entry.title
-                managed.location = entry.location
+                managed.content = entry.notes // Map notes to content
                 managed.date = entry.date
-                managed.notes = entry.notes
-                managed.photoData = entry.photoData
-                managed.edit = entry.edit
-                managed.isDeleted = entry.isDeleted
-                managed.latitude = entry.latitude ?? 0
-                managed.longitude = entry.longitude ?? 0
+                managed.isArchived = entry.isArchived
+                // The following fields do not exist in JournalEntry and are omitted:
+                // id, location, photoData, edit, latitude, longitude
             }
         }
         CoreDataManager.shared.saveContext()
@@ -107,16 +129,12 @@ class JournalStore: ObservableObject {
             request.predicate = NSPredicate(format: "id == %@", entry.id as CVarArg)
             if let result = try? context.fetch(request), result.isEmpty {
                 let managed = JournalEntry(context: context)
-                managed.id = entry.id
                 managed.title = entry.title
-                managed.location = entry.location
+                managed.content = entry.notes // Map notes to content
                 managed.date = entry.date
-                managed.notes = entry.notes
-                managed.photoData = entry.photoData
-                managed.edit = entry.edit
-                managed.isDeleted = entry.isDeleted
-                managed.latitude = entry.latitude ?? 0
-                managed.longitude = entry.longitude ?? 0
+                managed.isArchived = entry.isArchived
+                // The following fields do not exist in JournalEntry and are omitted:
+                // id, location, photoData, edit, latitude, longitude
             }
         }
         CoreDataManager.shared.saveContext()

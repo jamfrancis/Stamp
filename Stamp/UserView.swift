@@ -1,36 +1,40 @@
-// UserView.swift
-// User / Account tab for managing user preferences and manual sync with backend.
-// Uses JournalStore and Entry models defined in Entry.swift.
-
-import SwiftUI
 import Foundation
 
-struct UserView: View {
-    @ObservedObject var journalStore: JournalStore
-    @AppStorage("journalCardView") private var isCardView: Bool = true // persist user's selected layout
+struct Note {
+    var content: String
+    var isArchived: Bool // Changed from isDeleted to isArchived to represent archived notes instead of deleted ones
+}
 
-    var body: some View {
-        Form {
-            Section(header: Text("Journal Display")) {
-                Picker("Display Mode", selection: $isCardView) {
-                    Label("Card View", systemImage: "rectangle.grid.2x2").tag(true)
-                    Label("List View", systemImage: "list.bullet").tag(false)
-                }
-                .pickerStyle(.segmented)
-            }
-            Section {
-                Text("UserView Placeholder")
-                    .font(.title)
-                    .foregroundColor(.gray)
-                Button("Sync Now (Delta Upload & Download)") {
-                    Task {
-                        await SupabaseManager.shared.syncDelta(journalStore: journalStore)
-                    }
-                }
-            }
-        }
-        .navigationTitle("User / Sync")
-        .navigationBarTitleDisplayMode(.inline)
-        // Note: pass isCardView to JournalTabView in StampApp.swift as needed
+class NotesManager {
+    private var notes: [Note] = []
+    
+    func addNote(_ content: String) {
+        let note = Note(content: content, isArchived: false)
+        notes.append(note)
+    }
+    
+    func archiveNote(at index: Int) {
+        guard notes.indices.contains(index) else { return }
+        notes[index].isArchived = true // Updated from isDeleted to isArchived
+    }
+    
+    func activeNotes() -> [Note] {
+        // Return notes that are not archived (previously not deleted)
+        return notes.filter { !$0.isArchived }
+    }
+    
+    func archivedNotes() -> [Note] {
+        // Return notes that are archived (previously deleted)
+        return notes.filter { $0.isArchived }
+    }
+    
+    func countActiveNotes() -> Int {
+        // Count of notes that are not archived
+        return notes.filter { !$0.isArchived }.count
+    }
+    
+    func countArchivedNotes() -> Int {
+        // Count of notes that are archived
+        return notes.filter { $0.isArchived }.count
     }
 }
