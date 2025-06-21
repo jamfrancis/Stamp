@@ -54,90 +54,44 @@ struct Entry: Identifiable, Codable, Equatable {
 
     // Conversion from JournalEntry (Core Data)
     init(from managed: JournalEntry) {
-        self.id = UUID() // JournalEntry does not have 'id'; generate new UUID
+        self.id = managed.id
         self.title = managed.title ?? ""
-        self.location = "" // Not available in JournalEntry model
+        self.location = managed.location ?? ""
         self.date = managed.date ?? Date()
-        self.notes = managed.content ?? "" // 'content' maps to 'notes'
-        self.photoData = nil // Not available in JournalEntry model
-        self.edit = managed.date ?? Date() // Fallback to date
+        self.notes = managed.content ?? ""
+        self.photoData = managed.photoData
+        self.edit = managed.editDate ?? Date()
         self.isArchived = managed.isArchived
-        self.latitude = nil // Not available in JournalEntry model
-        self.longitude = nil // Not available in JournalEntry model
+        self.latitude = managed.latitude == 0 ? nil : managed.latitude
+        self.longitude = managed.longitude == 0 ? nil : managed.longitude
     }
 }
 
-// Observable store for journal entries
-class JournalStore: ObservableObject {
-    @Published var entries: [Entry] = []
-    private let context = CoreDataManager.shared.viewContext
-    private let saveKey = "TravelJournalEntries"
-
-    init() {
-        // Migrate data from UserDefaults once if present
-        migrateUserDefaultsIfNeeded()
-        load()
-    }
-
-    func load() {
-        let request = JournalEntry.fetchRequest() as! NSFetchRequest<JournalEntry>
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \JournalEntry.date, ascending: false)]
-        if let objects = try? context.fetch(request) {
-            self.entries = objects.map { Entry(from: $0) }
-        } else {
-            self.entries = []
-        }
-    }
-
-    func addEntry(_ entry: Entry) {
+// MARK: - Core Data Utilities
+extension JournalEntry {
+    static func create(from entry: Entry, in context: NSManagedObjectContext) {
         let managed = JournalEntry(context: context)
-        // Assign only fields existing in JournalEntry model
+        managed.id = entry.id
         managed.title = entry.title
-        managed.content = entry.notes // Map notes to content
+        managed.content = entry.notes
+        managed.location = entry.location
         managed.date = entry.date
+        managed.photoData = entry.photoData
+        managed.editDate = entry.edit
         managed.isArchived = entry.isArchived
-        // The following fields do not exist in JournalEntry and are omitted:
-        // id, location, photoData, edit, latitude, longitude
-        CoreDataManager.shared.saveContext()
-        load()
+        managed.latitude = entry.latitude ?? 0
+        managed.longitude = entry.longitude ?? 0
     }
-
-    func save() {
-        // Update existing entries in Core Data
-        for entry in entries {
-            let request = JournalEntry.fetchRequest() as! NSFetchRequest<JournalEntry>
-            request.predicate = NSPredicate(format: "id == %@", entry.id as CVarArg)
-            if let result = try? context.fetch(request), let managed = result.first {
-                managed.title = entry.title
-                managed.content = entry.notes // Map notes to content
-                managed.date = entry.date
-                managed.isArchived = entry.isArchived
-                // The following fields do not exist in JournalEntry and are omitted:
-                // id, location, photoData, edit, latitude, longitude
-            }
-        }
-        CoreDataManager.shared.saveContext()
-        load()
-    }
-
-    private func migrateUserDefaultsIfNeeded() {
-        guard let data = UserDefaults.standard.data(forKey: saveKey),
-              let legacyEntries = try? JSONDecoder().decode([Entry].self, from: data) else { return }
-        // Import each legacy entry to Core Data
-        for entry in legacyEntries {
-            let request = JournalEntry.fetchRequest() as! NSFetchRequest<JournalEntry>
-            request.predicate = NSPredicate(format: "id == %@", entry.id as CVarArg)
-            if let result = try? context.fetch(request), result.isEmpty {
-                let managed = JournalEntry(context: context)
-                managed.title = entry.title
-                managed.content = entry.notes // Map notes to content
-                managed.date = entry.date
-                managed.isArchived = entry.isArchived
-                // The following fields do not exist in JournalEntry and are omitted:
-                // id, location, photoData, edit, latitude, longitude
-            }
-        }
-        CoreDataManager.shared.saveContext()
-        UserDefaults.standard.removeObject(forKey: saveKey)
+    
+    func update(with entry: Entry) {
+        self.title = entry.title
+        self.content = entry.notes
+        self.location = entry.location
+        self.date = entry.date
+        self.photoData = entry.photoData
+        self.editDate = entry.edit
+        self.isArchived = entry.isArchived
+        self.latitude = entry.latitude ?? 0
+        self.longitude = entry.longitude ?? 0
     }
 }

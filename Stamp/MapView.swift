@@ -1,6 +1,6 @@
 // MapView.swift
-// Displays a map with annotation pins for each journal entry location.
-// Expects an Entry model defined in Entry.swift
+// Displays a map with annotation pins for each stamp location.
+// Updated to work with JournalEntry Core Data model
 
 import SwiftUI
 import MapKit
@@ -11,39 +11,51 @@ struct IdentifiablePointAnnotation: Identifiable {
     let title: String
 }
 
-struct MapView: View {
-    let journalEntries: [Entry]
+struct JournalMapView: View {
+    let journalEntries: [JournalEntry]
     @State private var region: MKCoordinateRegion? = nil
     @State private var annotations: [IdentifiablePointAnnotation] = []
     
     var body: some View {
-        Group {
+        ZStack {
             if let region = region, !annotations.isEmpty {
                 Map(coordinateRegion: .constant(region), annotationItems: annotations) { annotation in
                     MapMarker(coordinate: annotation.coordinate, tint: .blue)
                 }
-                .navigationTitle("Map")
-                .navigationBarTitleDisplayMode(.inline)
+                .ignoresSafeArea(.all)
             } else {
                 if journalEntries.isEmpty {
-                    Text("No locations to show")
-                        .navigationTitle("Map")
-                        .navigationBarTitleDisplayMode(.inline)
+                    VStack {
+                        Spacer()
+                        Text("No stamp locations to show")
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(.systemGroupedBackground))
+                    .ignoresSafeArea(.all)
                 } else {
-                    ProgressView("Loading locations...")
-                        .navigationTitle("Map")
-                        .navigationBarTitleDisplayMode(.inline)
+                    VStack {
+                        Spacer()
+                        ProgressView("Loading stamp locations...")
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(.systemGroupedBackground))
+                    .ignoresSafeArea(.all)
                 }
             }
         }
+        .navigationTitle("Map")
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear(perform: loadAnnotationsFromCachedCoordinates)
     }
 
     private func loadAnnotationsFromCachedCoordinates() {
         let foundAnnotations: [IdentifiablePointAnnotation] = journalEntries.compactMap { entry in
-            if let lat = entry.latitude, let lon = entry.longitude {
-                let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-                return IdentifiablePointAnnotation(coordinate: coordinate, title: entry.title)
+            if entry.latitude != 0 && entry.longitude != 0 {
+                let coordinate = CLLocationCoordinate2D(latitude: entry.latitude, longitude: entry.longitude)
+                return IdentifiablePointAnnotation(coordinate: coordinate, title: entry.title ?? "Untitled")
             }
             return nil
         }
