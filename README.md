@@ -1,16 +1,36 @@
 # Overview
 
-Stamp is an iOS app that allows users to create entries (or Stamps) to document their travels. Stamps are created by adding a title, location, date, photo, and notes. Tapping on an entry opens a detail view, where users can read or edit the information. The app follows interaction paradigms consistent with native iOS apps.
+Stamp is an iOS travel journaling app that allows users to create digital "stamps" to document their travels and experiences. Each stamp contains a title, location, date, photo, and personal notes, creating a comprehensive record of memorable moments. The app now features cloud database integration with Supabase, enabling real-time synchronization across devices and secure cloud storage of all travel entries.
 
-This project is part of my personal growth as a software engineer focused on building real-world apps using SwiftUI. My goal was to design a simple and functional iOS app that allowed users to log their travel experiences and practice working with state management, data persistence, and SwiftUI UI elements.
+The app seamlessly integrates with Supabase, a PostgreSQL-based cloud database platform, to provide robust data persistence and synchronization. Users can create, edit, and delete stamps locally, with changes automatically syncing to the cloud when an internet connection is available. The sync system handles offline functionality gracefully, queuing changes locally and uploading them when connectivity is restored. This ensures that travel memories are never lost, even when exploring remote destinations without reliable internet access.
 
-[Software Demo Video](https://youtu.be/V8L8llUx4EY)
+As a software engineer, I built this app to deepen my understanding of modern iOS development patterns, particularly around cloud database integration, offline-first architecture, and real-time data synchronization. The project challenged me to implement complex sync logic while maintaining a simple, intuitive user experience that follows iOS design principles.
+
+[Software Demo Video](https://youtu.be/k_R61EQgq0I)
+
+# Cloud Database
+
+The app uses Supabase as its cloud database platform, which provides a PostgreSQL database with real-time subscriptions, authentication, and RESTful APIs. Supabase offers a modern alternative to Firebase with the added benefit of using standard SQL and being open-source.
+
+The database structure centers around a single stamps table with the following schema:
+
+id (UUID, Primary Key): Unique identifier for each stamp
+title (String): User-defined title for the stamp
+content (Text): Detailed notes and descriptions
+location (String): Geographic location name
+date (Timestamp): When the stamp was created or when the experience occurred
+photo_data (Text): URL that points to Supabase Storage location
+edit_date (Timestamp): Last modification timestamp
+is_archived (Boolean): Soft delete flag for archived stamps
+latitude (Double): GPS latitude coordinate extracted from photos
+longitude (Double): GPS longitude coordinate extracted from photos
+created_at (Timestamp): Database creation timestamp
+updated_at (Timestamp): Database modification timestamp for sync tracking
 
 # Development Environment
 
-I used Xcode 15 on macOS to build and run the app on the built-in simulator and a physical iPhone 14 Pro and iPad Pro 11-inch. The project was written in Swift using SwiftUI for the interface.
-
-Swift is a programming language developed by Apple for building apps on their platform. All functionality was built using built-in frameworks such as SwiftUI, Foundation, and PhotosUI for image picking.
+The app was developed using Xcode 26.0 Beta on macOS 26, with testing performed on both the iOS Simulator and physical devices including iPhone 14 Pro and iPad Pro 11-inch using iOS 26. The project leverages modern iOS development tools and frameworks to create a native, performant experience.
+The app is written entirely in Swift 6.2 using SwiftUI for the user interface framework.
 
 # Useful Websites
 
@@ -21,7 +41,6 @@ Swift is a programming language developed by Apple for building apps on their pl
 
 # Future Work
 
-* Implement iCloud or CoreData syncing to preserve data across devices
-* Add search and filtering to make it easier to find past entries
-* Add folders for organizing trips
-* Improve photo display layout and allow multiple images per entry
+* Create export functionality for sharing complete travel journals
+* Implement push notifications for sync status and shared journal updates
+* Add offline map tiles for locations without internet connectivity
