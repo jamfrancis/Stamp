@@ -3,6 +3,7 @@ import CoreData
 import PhotosUI
 import CoreLocation
 
+// Main app entry point
 @main
 struct StampApp: App {
     let persistentContainer = CoreDataManager.shared
@@ -12,23 +13,26 @@ struct StampApp: App {
             MainTabView()
                 .environment(\.managedObjectContext, persistentContainer.viewContext)
                 .onAppear {
-                    // Sync on app launch
+                    // Trigger sync when app launches to get latest data
                     Supabase.shared.syncInBackground()
                 }
         }
     }
 }
 
+// Main tab view containing stamps list and map tabs
 struct MainTabView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     var body: some View {
         TabView {
+            // Primary tab showing list of stamps
             StampsTabView()
                 .tabItem {
                     Label("Stamps", systemImage: "inset.filled.square.dashed")
                 }
             
+            // Map tab showing stamp locations
             MapTabView()
                 .tabItem {
                     Label("Map", systemImage: "map.fill")
@@ -37,63 +41,79 @@ struct MainTabView: View {
     }
 }
 
+// Main stamps list view with navigation and sync controls
 struct StampsTabView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var supabase = Supabase.shared
 
+    // Fetch non-archived stamps, sorted by date (newest first)
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \JournalEntry.date, ascending: false)],
         predicate: NSPredicate(format: "isArchived == false"),
         animation: .default)
     private var entries: FetchedResults<JournalEntry>
 
+    // State variables for sheet presentations
     @State private var showingAddEntry = false
     @State private var showingProfile = false
+    @State private var showingDisplayView = false
+    @State private var selectedEntry: JournalEntry?
 
     var body: some View {
         NavigationStack {
             List {
                 ForEach(entries) { entry in
-                    NavigationLink(destination: EditEntryView(entry: entry)) {
-                        HStack(spacing: 12) {
-                            // Photo thumbnail
-                            if let photoData = entry.photoData, let uiImage = UIImage(data: photoData) {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 60, height: 60)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                            } else {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color(.systemGray5))
-                                    .frame(width: 60, height: 60)
-                                    .overlay(
-                                        Image(systemName: "photo")
-                                            .foregroundColor(.secondary)
-                                    )
-                            }
-                            
-                            // Text content
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(entry.title ?? "Untitled")
-                                    .font(.headline)
-                                    .lineLimit(1)
-                                
-                                if let location = entry.location, !location.isEmpty {
-                                    Text(location)
-                                        .font(.subheadline)
+                    HStack(spacing: 12) {
+                        // Display photo thumbnail or placeholder
+                        if let photoData = entry.photoData, let uiImage = UIImage(data: photoData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 60, height: 60)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                        } else {
+                            // Placeholder when no photo is available
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color(.systemGray5))
+                                .frame(width: 60, height: 60)
+                                .overlay(
+                                    Image(systemName: "photo")
                                         .foregroundColor(.secondary)
-                                        .lineLimit(1)
-                                }
-                                
-                                Text(entry.date ?? Date(), style: .date)
-                                    .font(.caption)
+                                )
+                        }
+                        
+                        // Stamp information text
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(entry.title ?? "Untitled")
+                                .font(.headline)
+                                .lineLimit(1)
+                            
+                            if let location = entry.location, !location.isEmpty {
+                                Text(location)
+                                    .font(.subheadline)
                                     .foregroundColor(.secondary)
+                                    .lineLimit(1)
                             }
                             
-                            Spacer()
+                            Text(entry.date ?? Date(), style: .date)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                         }
-                        .contentShape(Rectangle())
+                        
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        // Tap to view stamp in DisplayView
+                        selectedEntry = entry
+                        showingDisplayView = true
+                    }
+                    .swipeActions(edge: .leading) {
+                        // Swipe to edit stamp
+                        NavigationLink(destination: EditEntryView(entry: entry)) {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                        .tint(.blue)
                     }
                 }
                 .onDelete(perform: deleteEntries)
@@ -123,6 +143,11 @@ struct StampsTabView: View {
             .sheet(isPresented: $showingProfile) {
                 UserProfileView()
                     .environment(\.managedObjectContext, viewContext)
+            }
+            .sheet(isPresented: $showingDisplayView) {
+                if let selectedEntry = selectedEntry {
+                    DisplayView(entry: selectedEntry)
+                }
             }
         }
     }
@@ -155,6 +180,7 @@ struct StampsTabView: View {
             let entriesToArchive = offsets.map { entries[$0] }
             entriesToArchive.forEach { entry in
                 entry.isArchived = true
+                entry.editDate = Date() // Update editDate so updated_at reflects archival time
                 // Mark for sync
                 Supabase.shared.markForSync(entry.id)
             }
@@ -469,6 +495,172 @@ struct EditEntryView: View {
             }
         }
     }
+}
+
+// MARK: - Display View
+// Full-screen view for displaying a stamp with large photo and details
+struct DisplayView: View {
+    @Environment(\.presentationMode) var presentationMode
+    let entry: JournalEntry
+    @State private var showingEditView = false
+    @State private var isFavorite = false
+    @State private var isLoadingFavorite = true
+    
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .center, spacing: 20) {
+                    // Title
+                    Text(entry.title ?? "Untitled")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    
+                    // Photo
+                    if let photoData = entry.photoData, let uiImage = UIImage(data: photoData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxHeight: 400)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .shadow(radius: 8)
+                    } else {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.systemGray5))
+                            .frame(height: 200)
+                            .overlay(
+                                VStack {
+                                    Image(systemName: "photo")
+                                        .font(.system(size: 50))
+                                        .foregroundColor(.secondary)
+                                    Text("No Photo")
+                                        .foregroundColor(.secondary)
+                                }
+                            )
+                    }
+                    
+                    // Information
+                    VStack(alignment: .leading, spacing: 16) {
+                        if let location = entry.location, !location.isEmpty {
+                            InfoRow(icon: "location.fill", title: "Location", content: location)
+                        }
+                        
+                        if let date = entry.date {
+                            InfoRow(icon: "calendar", title: "Date", content: DateFormatter.displayFormatter.string(from: date))
+                        }
+                        
+                        if let content = entry.content, !content.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Image(systemName: "text.alignleft")
+                                        .foregroundColor(.blue)
+                                        .frame(width: 20)
+                                    Text("Notes")
+                                        .font(.headline)
+                                    Spacer()
+                                }
+                                
+                                Text(content)
+                                    .font(.body)
+                                    .padding()
+                                    .background(Color(.systemGray6))
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
+                        }
+                        
+                        if let editDate = entry.editDate {
+                            InfoRow(icon: "clock", title: "Last Updated", content: DateFormatter.displayFormatter.string(from: editDate))
+                        }
+                    }
+                    .padding(.horizontal)
+                    
+                    Spacer(minLength: 50)
+                }
+                .padding(.vertical)
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(
+                leading: Button("Done") {
+                    presentationMode.wrappedValue.dismiss()
+                },
+                trailing: Button(action: {
+                    Task {
+                        do {
+                            let newFavoriteStatus = try await Supabase.shared.toggleFavorite(stampId: entry.id)
+                            await MainActor.run {
+                                isFavorite = newFavoriteStatus
+                            }
+                        } catch {
+                            print("Failed to toggle favorite: \(error)")
+                        }
+                    }
+                }) {
+                    if isLoadingFavorite {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                    } else {
+                        Image(systemName: isFavorite ? "star.fill" : "star")
+                            .foregroundColor(isFavorite ? .yellow : .gray)
+                            .font(.title2)
+                    }
+                }
+            )
+            .sheet(isPresented: $showingEditView) {
+                EditEntryView(entry: entry)
+                    .environment(\.managedObjectContext, CoreDataManager.shared.viewContext)
+            }
+            .onAppear {
+                Task {
+                    do {
+                        let favoriteStatus = try await Supabase.shared.getFavoriteStatus(stampId: entry.id)
+                        await MainActor.run {
+                            isFavorite = favoriteStatus
+                            isLoadingFavorite = false
+                        }
+                    } catch {
+                        await MainActor.run {
+                            isLoadingFavorite = false
+                        }
+                        print("Failed to load favorite status: \(error)")
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct InfoRow: View {
+    let icon: String
+    let title: String
+    let content: String
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(.blue)
+                .frame(width: 20)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.headline)
+                Text(content)
+                    .font(.body)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+        }
+    }
+}
+
+extension DateFormatter {
+    static let displayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
+        return formatter
+    }()
 }
 
 // Sync logic example, updating field name from isDeleted to isArchived and Entry to JournalEntry

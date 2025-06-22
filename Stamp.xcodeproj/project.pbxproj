@@ -14,6 +14,8 @@
 		1A5ABFAA2DFA112300FAA231 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 1A5ABFA92DFA112300FAA231 /* Realtime */; };
 		1A5ABFAC2DFA112300FAA231 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 1A5ABFAB2DFA112300FAA231 /* Storage */; };
 		1A5ABFAF2DFA11E300FAA231 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 1A5ABFAE2DFA11E300FAA231 /* Supabase */; };
+		1A8CD9BE2E078C0D00DED431 /* Secrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A8CD9BD2E078C0D00DED431 /* Secrets.plist */; };
+		1A8CD9C02E078C1100DED431 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 1A8CD9BF2E078C1100DED431 /* .gitignore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +37,8 @@
 
 /* Begin PBXFileReference section */
 		1A5ABFA02DFA0DDE00FAA231 /* Supabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Supabase.swift; sourceTree = "<group>"; };
+		1A8CD9BD2E078C0D00DED431 /* Secrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Secrets.plist; sourceTree = "<group>"; };
+		1A8CD9BF2E078C1100DED431 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		1AB7B59C2DF4DE1C0018F8B5 /* Stamp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Stamp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1AB7B5A92DF4DE1F0018F8B5 /* StampTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StampTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1AB7B5B32DF4DE1F0018F8B5 /* StampUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StampUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -93,6 +97,8 @@
 				1AB7B59D2DF4DE1C0018F8B5 /* Products */,
 				1A5ABFA02DFA0DDE00FAA231 /* Supabase.swift */,
 				1A5ABFAD2DFA11E300FAA231 /* Frameworks */,
+				1A8CD9BD2E078C0D00DED431 /* Secrets.plist */,
+				1A8CD9BF2E078C1100DED431 /* .gitignore */,
 			);
 			sourceTree = "<group>";
 		};
@@ -229,6 +235,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A8CD9BE2E078C0D00DED431 /* Secrets.plist in Resources */,
+				1A8CD9C02E078C1100DED431 /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
