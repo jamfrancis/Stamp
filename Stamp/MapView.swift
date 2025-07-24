@@ -46,8 +46,7 @@ struct JournalMapView: View {
                 }
             }
         }
-        .navigationTitle("Map")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
         .onAppear(perform: loadAnnotationsFromCachedCoordinates)
     }
 

@@ -8,6 +8,7 @@ import CoreLocation
 struct StampApp: App {
     let persistentContainer = CoreDataManager.shared
     
+    
     var body: some Scene {
         WindowGroup {
             MainTabView()
@@ -727,6 +728,10 @@ struct ServerEntry {
 // MARK: - Map Tab View
 struct MapTabView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @StateObject private var mapSettings = MapSettings.shared
+    @State private var selectedEntry: JournalEntry?
+    @State private var showingDisplayView = false
+    @State private var showPastMonthOnly = false
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \JournalEntry.date, ascending: false)],
@@ -736,9 +741,68 @@ struct MapTabView: View {
     
     var body: some View {
         NavigationStack {
-            JournalMapView(journalEntries: Array(entriesWithLocations))
-                .navigationTitle("Map")
-                .navigationBarTitleDisplayMode(.inline)
+            ZStack {
+                // Map implementation based on user selection
+                Group {
+                    switch mapSettings.selectedImplementation {
+                    case .mapKit:
+                        EnhancedMapKitView(
+                            journalEntries: Array(entriesWithLocations),
+                            selectedEntry: $selectedEntry,
+                            onStampTap: { entry in
+                                selectedEntry = entry
+                                showingDisplayView = true
+                            }
+                        )
+                    case .arcGIS:
+                        EnhancedArcGISView(
+                            journalEntries: Array(entriesWithLocations),
+                            selectedEntry: $selectedEntry,
+                            showPastMonthOnly: $showPastMonthOnly,
+                            onStampTap: { entry in
+                                selectedEntry = entry
+                                showingDisplayView = true
+                            }
+                        )
+                    }
+                }
+                .ignoresSafeArea(.all)
+                
+                // Filter button for ArcGIS (top-right corner)
+                if mapSettings.selectedImplementation == .arcGIS {
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                showPastMonthOnly.toggle()
+                            }) {
+                                Image(systemName: showPastMonthOnly ? "calendar.badge.minus" : "calendar")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                                    .padding(12)
+                                    .background(showPastMonthOnly ? Color.orange : Color.blue)
+                                    .clipShape(Circle())
+                                    .shadow(radius: 4)
+                            }
+                            .padding(.trailing)
+                        }
+                        .padding(.top, 50) // Account for navigation bar
+                        Spacer()
+                    }
+                }
+            }
+            .navigationBarHidden(true)
+            .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showingDisplayView) {
+                if let selectedEntry = selectedEntry {
+                    DisplayView(entry: selectedEntry)
+                }
+            }
+            .onChange(of: selectedEntry) { oldValue, newEntry in
+                if newEntry == nil {
+                    showingDisplayView = false
+                }
+            }
         }
     }
 }

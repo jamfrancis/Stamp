@@ -14,6 +14,7 @@
 		1A5ABFAA2DFA112300FAA231 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 1A5ABFA92DFA112300FAA231 /* Realtime */; };
 		1A5ABFAC2DFA112300FAA231 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 1A5ABFAB2DFA112300FAA231 /* Storage */; };
 		1A5ABFAF2DFA11E300FAA231 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 1A5ABFAE2DFA11E300FAA231 /* Supabase */; };
+		1A5ABFB32DFA200000FAA231 /* ArcGIS in Frameworks */ = {isa = PBXBuildFile; productRef = 1A5ABFB22DFA200000FAA231 /* ArcGIS */; };
 		1A8CD9BE2E078C0D00DED431 /* Secrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A8CD9BD2E078C0D00DED431 /* Secrets.plist */; };
 		1A8CD9C02E078C1100DED431 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 1A8CD9BF2E078C1100DED431 /* .gitignore */; };
 /* End PBXBuildFile section */
@@ -63,6 +64,7 @@
 				1A5ABFA42DFA112300FAA231 /* Auth in Frameworks */,
 				1A5ABFAC2DFA112300FAA231 /* Storage in Frameworks */,
 				1A5ABFAA2DFA112300FAA231 /* Realtime in Frameworks */,
+				1A5ABFB32DFA200000FAA231 /* ArcGIS in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -138,6 +140,7 @@
 				1A5ABFA92DFA112300FAA231 /* Realtime */,
 				1A5ABFAB2DFA112300FAA231 /* Storage */,
 				1A5ABFAE2DFA11E300FAA231 /* Supabase */,
+				1A5ABFB22DFA200000FAA231 /* ArcGIS */,
 			);
 			productName = Stamp;
 			productReference = 1AB7B59C2DF4DE1C0018F8B5 /* Stamp.app */;
@@ -217,6 +220,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				1A5ABFA22DFA112300FAA231 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				1A5ABFB12DFA200000FAA231 /* XCRemoteSwiftPackageReference "arcgis-maps-sdk-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1AB7B59D2DF4DE1C0018F8B5 /* Products */;
@@ -429,8 +433,9 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -457,8 +462,9 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -588,10 +594,18 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		1A5ABFA22DFA112300FAA231 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/supabase-community/supabase-swift";
+			repositoryURL = "https://github.com/supabase-community/supabase-swift.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.5.1;
+			};
+		};
+		1A5ABFB12DFA200000FAA231 /* XCRemoteSwiftPackageReference "arcgis-maps-sdk-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Esri/arcgis-maps-sdk-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 200.4.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -626,6 +640,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1A5ABFA22DFA112300FAA231 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		1A5ABFB22DFA200000FAA231 /* ArcGIS */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1A5ABFB12DFA200000FAA231 /* XCRemoteSwiftPackageReference "arcgis-maps-sdk-swift" */;
+			productName = ArcGIS;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

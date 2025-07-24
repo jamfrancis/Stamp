@@ -5,6 +5,7 @@ import SwiftUI
 struct UserProfileView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var supabase = Supabase.shared
+    @StateObject private var mapSettings = MapSettings.shared
     @State private var showingFavorites = false
     
     // Fetch active (non-archived) stamps for statistics
@@ -38,6 +39,22 @@ struct UserProfileView: View {
                                 .foregroundColor(.secondary)
                                 .font(.caption)
                         }
+                    }
+                }
+                
+                Section("Map Settings") {
+                    HStack {
+                        Image(systemName: "map.fill")
+                            .foregroundColor(.blue)
+                        Text("Map Implementation")
+                        Spacer()
+                        Picker("Map Implementation", selection: $mapSettings.selectedImplementation) {
+                            ForEach(MapImplementation.allCases, id: \.self) { implementation in
+                                Text(implementation.displayName).tag(implementation)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .frame(width: 120)
                     }
                 }
                 
