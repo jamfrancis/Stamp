@@ -1,6 +1,8 @@
-// ArcGISMapView.swift
-// Bridge file for backward compatibility - imports from organized Maps/ArcGIS structure
+// ArcGISMapView.swift  
+// bridge file for backward compatibility
 
 import SwiftUI
 
-// These are now just aliases that point to the organized ArcGIS implementations
+// arcgis implementations - cleaned up structure
+typealias ArcGISMapView = ArcGISMapImplementation
+typealias ArcGISIntegrationWrapper = ArcGISView

@@ -1,6 +1,5 @@
 // MapViewModel.swift
-// Shared view model for MapKit and ArcGIS map views
-// Manages selectedEntry state using ObservableObject pattern
+// shared state management for both map implementations
 
 import SwiftUI
 import Combine
@@ -8,17 +7,17 @@ import Combine
 class MapViewModel: ObservableObject {
     @Published var selectedEntry: JournalEntry? = nil
     
-    // Method to select an entry (called from map delegates/handlers)
+    // select an entry from map tap
     func selectEntry(_ entry: JournalEntry?) {
         selectedEntry = entry
     }
     
-    // Method to clear selection
+    // clear current selection
     func clearSelection() {
         selectedEntry = nil
     }
     
-    // Helper to toggle selection (useful for tap handlers)
+    // toggle selection on/off
     func toggleSelection(for entry: JournalEntry) {
         if selectedEntry?.id == entry.id {
             clearSelection()
