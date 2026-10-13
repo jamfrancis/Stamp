@@ -1,1 +1,6 @@
-// Secrets.plist
+# Local credentials (copy Secrets.example.plist to Secrets.plist and fill in)
+Secrets.plist
+
+# Xcode user data
+xcuserdata/
+.DS_Store

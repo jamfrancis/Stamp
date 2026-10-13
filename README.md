@@ -14,6 +14,15 @@ The app was developed using Xcode 26.0 Beta on macOS 26, with testing performed 
 
 The app integrates with Supabase for cloud storage, allowing for the seamless synchronization of travel stamps across multiple devices. This provides a robust backend for storing and retrieving geospatial data, ensuring that user information is always backed up and accessible.
 
+## Supabase Setup
+
+Supabase credentials are not committed to the repository. To run the app:
+
+1. Copy `Secrets.example.plist` to `Secrets.plist` in the project root.
+2. Fill in `SUPABASE_URL` and `SUPABASE_KEY` (the project's **anon** key, found in Supabase under Project Settings → API).
+
+`Secrets.plist` is listed in `.gitignore`, so it stays on your machine.
+
 # Useful Websites
 
 * [iGIS](https://apps.apple.com/us/app/igis/id338967424)
